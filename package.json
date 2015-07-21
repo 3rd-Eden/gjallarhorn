@@ -1,0 +1,22 @@
+{
+  "name": "gjallarhorn",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test.js"
+  },
+  "author": "",
+  "license": "mit",
+  "dependencies": {
+    "millisecond": "0.1.1",
+    "one-time": "0.0.4",
+    "tick-tock": "0.1.5",
+    "ultron": "1.0.2"
+  },
+  "devDependencies": {
+    "assume": "1.2.5",
+    "mocha": "2.2.5",
+    "pre-commit": "1.0.10"
+  }
+}
