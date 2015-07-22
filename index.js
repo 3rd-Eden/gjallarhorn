@@ -121,12 +121,13 @@ Gjallarhorn.prototype.again = function again(round) {
  */
 Gjallarhorn.prototype.tracking = function tracking(round) {
   var self = this
-    , id = round.id;
+    , id = round.id
+    , messages = [];
 
   self.timers.setTimeout(id +':timeout', function timeout() {
     if (self.again(round)) return;
 
-    self.clear(id, new Error('Operation timed out after '+ self.timeout +'ms'));
+    self.clear(id, new Error('Operation timed out after '+ self.timeout +'ms'), messages);
     self.next();
   }, self.timeout);
 
@@ -139,8 +140,12 @@ Gjallarhorn.prototype.tracking = function tracking(round) {
       err = new Error('Operation failed after '+ self.retries +' retries');
     }
 
-    self.clear(id, err);
+    self.clear(id, err, messages || []);
     self.next();
+  });
+
+  round.events.on('message', function message(data) {
+    messages.push(data);
   });
 
   this.active.push(round);
@@ -151,13 +156,14 @@ Gjallarhorn.prototype.tracking = function tracking(round) {
  *
  * @param {String} id Id of the child that needs to be cleaned up.
  * @param {Error} err Optional error argument if the we failed.
+ * @param {Array} messages All the received messages from this process.
  * @api private
  */
-Gjallarhorn.prototype.clear = function clear(id, err) {
+Gjallarhorn.prototype.clear = function clear(id, err, messages) {
   this.active = this.active.filter(function filter(round) {
     if (id !== round.id) return false;
 
-    round.fn(err);
+    round.fn(err, messages);
 
     round.events.remove();
     round.ref.kill(err ? 1 : 0);
