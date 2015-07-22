@@ -1,7 +1,8 @@
 describe('gjallarhorn', function () {
   'use strict';
 
-  var Gjallarhorn = require('./')
+  var EventEmitter = require('events').EventEmitter
+    , Gjallarhorn = require('./')
     , assume = require('assume')
     , ghorn;
 
@@ -89,7 +90,46 @@ describe('gjallarhorn', function () {
       assume(ghorn.destroy()).is.false();
     });
 
-    it('clears all active processes with an cancel error');
-    it('clears all queued processes with an cancel error');
+    it('clears all active processes with an cancel error', function (next) {
+
+      ghorn.reload(function () {
+        return new EventEmitter();
+      });
+
+      ghorn.launch({ payload: 1 }, function (err) {
+        assume(err.message).includes('cancel');
+
+        setTimeout(function () {
+          assume(ghorn.active).has.length(0);
+          assume(ghorn.queue).has.length(0);
+
+          next();
+        }, 10);
+      });
+
+      assume(ghorn.queue).has.length(0);
+      assume(ghorn.active).has.length(1);
+
+      ghorn.destroy();
+    });
+
+    it('clears all queued processes with an cancel error', function () {
+      ghorn.active = new Array(ghorn.concurrent);
+
+      ghorn.launch({ payload: 1 }, function (err) {
+        assume(err.message).includes('cancel');
+
+        setTimeout(function () {
+          assume(ghorn.queue).has.length(0);
+          assume(ghorn.active).has.length(0);
+
+          next();
+        }, 10);
+      });
+
+      assume(ghorn.queue).has.length(1);
+
+      ghorn.destroy();
+    });
   });
 });

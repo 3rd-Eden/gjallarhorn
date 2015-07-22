@@ -167,7 +167,9 @@ Gjallarhorn.prototype.clear = function clear(id, err, messages) {
     round.fn(err, messages);
 
     round.events.remove();
-    round.ref.kill(err ? 1 : 0);
+
+    try { round.ref.kill(err ? 1 : 0); }
+    catch (e) {}
 
     return true;
   });
