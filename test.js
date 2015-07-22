@@ -37,7 +37,15 @@ describe('gjallarhorn', function () {
 
   describe('#launch', function () {
     it('returns a boolean as indication if a process is queued', function () {
+      ghorn.active = new Array(ghorn.concurrent);
 
+      ghorn.reload(function () {
+        return {};
+      });
+
+      assume(ghorn.queue).to.have.length(0);
+      assume(ghorn.launch({spec: 'here'}, function () {})).equals(false);
+      assume(ghorn.queue).to.have.length(1);
     });
 
     it('does not launch if the factory returns nothing', function (next) {
@@ -49,12 +57,10 @@ describe('gjallarhorn', function () {
         return false;
       });
 
-      assume(ghorn.launch(1)).equals(false);
+      assume(ghorn.launch(1, function () {})).equals(false);
       next();
     });
 
-    it('limits the amount of concurrent processes');
-    it('implements a ping/pong strategy');
     it('retries failed processes');
     it('adds a timeout');
   });
