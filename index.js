@@ -16,7 +16,7 @@ var TickTock = require('tick-tock')
  */
 function Round(id, spec, ref, retries, fn) {
   this.events = new Ultron(ref);
-  this.retries = retries;
+  this.retries = retries - 1;
   this.spec = spec;
   this.ref = ref;
   this.id = id;
@@ -90,6 +90,7 @@ Gjallarhorn.prototype.launch = function launch(spec, options, fn) {
 /**
  * Check if we need to run another item from our queue.
  *
+ * @returns {Boolean}
  * @api private
  */
 Gjallarhorn.prototype.next = function next() {
@@ -206,7 +207,7 @@ Gjallarhorn.prototype.destroy = function destroy() {
   //
   this.queue.length = this.active.length = 0;
   this.timers.destroy();
-  this.factory = null;
+  this.factory = this.timers = null;
 
   return true;
 };
