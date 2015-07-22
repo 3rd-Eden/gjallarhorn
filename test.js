@@ -2,12 +2,27 @@ describe('gjallarhorn', function () {
   'use strict';
 
   var EventEmitter = require('events').EventEmitter
+    , fork = require('child_process').fork
     , Gjallarhorn = require('./')
     , assume = require('assume')
+    , path = require('path')
+    , fixtures
     , ghorn;
+
+  fixtures = require('fs').readdirSync(path.join(__dirname, 'fixtures'))
+  .reduce(function reduce(memo, fixture) {
+    memo[fixture.replace('.js', '')] = 1;
+    return memo;
+  }, {});
 
   beforeEach(function () {
     ghorn = new Gjallarhorn();
+
+    ghorn.reload(function factory(name) {
+      if (!(name in fixtures)) return false;
+
+      return fork(path.join(__dirname, 'fixtures', name +'.js'));
+    });
   });
 
   afterEach(function () {
@@ -62,14 +77,55 @@ describe('gjallarhorn', function () {
       next();
     });
 
-    it('receives the send messages as data argument');
-    it('receives an error if the operation times out');
-    it('receives an error if re-tries to many times');
+    it('adds a timeout', function () {
+      ghorn.launch('messages', function () {});
+      assume(ghorn.timers.active((ghorn.ids - 1) +':timeout')).is.true();
+    });
+
+    it('receives the send messages as data argument', function (next) {
+      ghorn.launch('messages', function (err, data) {
+        assume(data).is.a('array');
+        assume(data).has.length(2);
+
+        assume(data[0]).deep.equals({ message: 1 });
+        assume(data[1]).deep.equals({ message: 2 });
+
+        next();
+      });
+    });
+
+    it('receives an error if the operation times out', function (next) {
+      ghorn.timeout = 200;
+
+      ghorn.launch('timeout', function (err) {
+        assume(err.message).includes('timed out');
+        assume(err.message).includes('200 ms');
+
+        next();
+      });
+    });
+
+    it('receives an error if re-tries to many times', function (next) {
+      ghorn.launch('death', function (err) {
+        assume(err.message).includes('failed');
+        assume(err.message).includes('retrying');
+
+        next();
+      });
+    });
+
+    it('can supply a custom retry option', function (next) {
+      ghorn.launch('death', { retries: 5 }, function (err) {
+        assume(err.message).includes('failed');
+        assume(err.message).includes('retrying');
+
+        next();
+      });
+    });
+
     it('decreases the active items');
     it('starts a new item from the queue on completion');
-    it('can supply a custom retry option');
     it('retries failed processes');
-    it('adds a timeout');
   });
 
   describe('#next', function () {

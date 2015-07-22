@@ -108,8 +108,15 @@ Gjallarhorn.prototype.next = function next() {
 Gjallarhorn.prototype.again = function again(round) {
   if (!round.retries) return false;
 
+  //
+  // Create a back up of the callback as we don't really want it to be called in
+  // our `clear` call as we're not done yet.
+  //
+  var fn = round.fn;
+  round.fn = function nope() {};
+
   this.clear(round.id);
-  this.launch(round.spec, round, round.fn);
+  this.launch(round.spec, round, fn);
 
   return true;
 };
@@ -128,7 +135,7 @@ Gjallarhorn.prototype.tracking = function tracking(round) {
   self.timers.setTimeout(id +':timeout', function timeout() {
     if (self.again(round)) return;
 
-    self.clear(id, new Error('Operation timed out after '+ self.timeout +'ms'), messages);
+    self.clear(id, new Error('Operation timed out after '+ self.timeout +' ms'), messages);
     self.next();
   }, self.timeout);
 
@@ -138,7 +145,7 @@ Gjallarhorn.prototype.tracking = function tracking(round) {
     if (+code !== 0) {
       if (self.again(round)) return;
 
-      err = new Error('Operation failed after '+ self.retries +' retries');
+      err = new Error('Operation failed after retrying');
     }
 
     self.clear(id, err, messages || []);
@@ -168,7 +175,7 @@ Gjallarhorn.prototype.clear = function clear(id, err, messages) {
 
     round.events.remove();
 
-    try { round.ref.kill(err ? 1 : 0); }
+    try { round.ref.kill(); }
     catch (e) {}
 
     return true;
