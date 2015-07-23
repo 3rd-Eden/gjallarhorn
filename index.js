@@ -139,6 +139,25 @@ Gjallarhorn.prototype.tracking = function tracking(round) {
     , id = round.id
     , messages = [];
 
+  /**
+   * According to the documentation it's possible that `exit` is not called in
+   * case of an error. So we need to have a general function that can handle
+   * both errors from the `error` event and bad exit codes from the `exit`
+   * event.
+   *
+   * @param {Error|Number} err
+   * @api private
+   */
+  function retry(err) {
+    if (err) {
+      if (self.again(round)) return;
+      if ('number' === typeof err) err = new Error('Operation failed after retrying');
+    }
+
+    self.clear(id, err, messages || []);
+    self.next();
+  }
+
   self.timers.setTimeout(id +':timeout', function timeout() {
     if (self.again(round)) return;
 
@@ -146,20 +165,10 @@ Gjallarhorn.prototype.tracking = function tracking(round) {
     self.next();
   }, self.timeout);
 
-  round.events.once('exit', function exit(code, signal) {
-    var err;
-
-    if (+code !== 0) {
-      if (self.again(round)) return;
-
-      err = new Error('Operation failed after retrying');
-    }
-
-    self.clear(id, err, messages || []);
-    self.next();
-  });
-
-  round.events.on('message', function message(data) {
+  round.events
+  .once('exit', retry)
+  .once('error', retry)
+  .on('message', function message(data) {
     messages.push(data);
   });
 
