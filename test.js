@@ -131,8 +131,47 @@ describe('gjallarhorn', function () {
   });
 
   describe('#next', function () {
-    it('returns false if active is full');
-    it('launches the first of the queue');
+    it('returns false if nothing can be processed', function () {
+      assume(ghorn.next()).is.false();
+    });
+
+    it('returns false if active is full', function () {
+      ghorn.active = new Array(ghorn.concurrent);
+      ghorn.queue.push([0, function () {}]);
+
+      assume(ghorn.next()).is.false();
+    });
+
+    it('launches the first of the queue', function (next) {
+      var order = [];
+
+      ghorn.active = new Array(ghorn.concurrent);
+
+      ghorn.reload(function () {
+        var ee = new EventEmitter();
+
+        setTimeout(function () { ee.emit('exit', 0); }, 10);
+
+        return ee;
+      });
+
+      ghorn.launch('foo', function () {
+        order.push('first');
+      });
+
+      ghorn.launch('foo', function (err) {
+        order.push('second');
+
+        assume(order).deep.equals(['first', 'second']);
+        next();
+      });
+
+      assume(ghorn.queue).is.length(2);
+      assume(ghorn.next()).equals(false);
+
+      ghorn.active.length = 0;
+      assume(ghorn.next()).equals(true);
+    });
   });
 
   describe('#again', function () {
@@ -149,7 +188,6 @@ describe('gjallarhorn', function () {
     });
 
     it('clears all active processes with an cancel error', function (next) {
-
       ghorn.reload(function () {
         return new EventEmitter();
       });

@@ -81,7 +81,7 @@ Gjallarhorn.prototype.launch = function launch(spec, options, fn) {
 
   options.retries = 'retries' in options ? options.retries : this.retries;
 
-  if (this.queue.length || this.active.length === this.concurrent) {
+  if (this.active.length === this.concurrent) {
     this.queue.push([ spec, options, fn ]);
     return false;
   }
@@ -102,6 +102,7 @@ Gjallarhorn.prototype.launch = function launch(spec, options, fn) {
  */
 Gjallarhorn.prototype.next = function next() {
   if (!this.queue.length || this.active.length === this.concurrent) return false;
+
   return this.launch.apply(this, this.queue.shift());
 };
 
