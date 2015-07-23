@@ -1,11 +1,11 @@
 # [gjallarhorn](https://youtu.be/uEekQYXh5vg)
 
-[![Version npm][version]](http://browsenpm.org/package/gjallarhorn)[![Build Status][build]](https://travis-ci.org/3rd-eden/gjallarhorn)[![Dependencies][david]](https://david-dm.org/3rd-eden/gjallarhorn)[![Coverage Status][cover]](https://coveralls.io/r/3rd-eden/gjallarhorn?branch=master)
+[![Version npm][version]](http://browsenpm.org/package/gjallarhorn)[![Build Status][build]](https://travis-ci.org/3rd-Eden/gjallarhorn)[![Dependencies][david]](https://david-dm.org/3rd-Eden/gjallarhorn)[![Coverage Status][cover]](https://coveralls.io/r/3rd-Eden/gjallarhorn?branch=master)
 
 [version]: https://img.shields.io/npm/v/gjallarhorn.svg?style=flat-square
-[build]: https://img.shields.io/travis/3rd-eden/gjallarhorn/master.svg?style=flat-square
-[david]: https://img.shields.io/david/3rd-eden/gjallarhorn.svg?style=flat-square
-[cover]: https://img.shields.io/coveralls/3rd-eden/gjallarhorn/master.svg?style=flat-square
+[build]: https://img.shields.io/travis/3rd-Eden/gjallarhorn/master.svg?style=flat-square
+[david]: https://img.shields.io/david/3rd-Eden/gjallarhorn.svg?style=flat-square
+[cover]: https://img.shields.io/coveralls/3rd-Eden/gjallarhorn/master.svg?style=flat-square
 
 Gjallarhorn is a small module that allows you to easily orchestrate multiple
 child processes without accidentally bombing your self. It has concurrency
