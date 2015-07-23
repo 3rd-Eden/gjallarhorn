@@ -146,10 +146,6 @@ describe('gjallarhorn', function () {
         next();
       });
     });
-
-    it('decreases the active items');
-    it('starts a new item from the queue on completion');
-    it('retries failed processes');
   });
 
   describe('#next', function () {
