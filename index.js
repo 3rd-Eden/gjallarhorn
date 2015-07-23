@@ -26,6 +26,13 @@ function Round(id, spec, ref, retries, fn) {
 /**
  * A small child-process management utility.
  *
+ * Options:
+ *
+ * - timeout: Maximum time a spawned child process is allowed to stay alive.
+ * - concurrent: Maximum number of concurrent processes we're allowed to spawn.
+ * - retries: How many times we're allowed to (re)execute a failed process.
+ * - factory: A function that generates your child processes.
+ *
  * @constructor
  * @param {Object} options Configuration of the instance.
  * @api public
