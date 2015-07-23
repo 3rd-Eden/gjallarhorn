@@ -1,22 +1,28 @@
 {
   "name": "gjallarhorn",
   "version": "0.0.1",
-  "description": "",
+  "description": "Blasting away child processes",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test.js"
+    "100%": "istanbul check-coverage --statements 100 --functions 100 --lines 100 --branches 100",
+    "test": "mocha test.js",
+    "watch": "mocha --watch test.js",
+    "coverage": "istanbul cover ./node_modules/.bin/_mocha -- test.js",
+    "test-travis": "istanbul cover node_modules/.bin/_mocha --report lcovonly -- test.js"
   },
-  "author": "",
-  "license": "mit",
+  "author": "Arnout Kazemier",
+  "license": "MIT",
   "dependencies": {
-    "millisecond": "0.1.1",
-    "one-time": "0.0.4",
-    "tick-tock": "0.1.5",
-    "ultron": "1.0.2"
+    "millisecond": "0.1.x",
+    "one-time": "0.0.x",
+    "tick-tock": "0.1.x",
+    "ultron": "1.0.x"
   },
   "devDependencies": {
-    "assume": "1.2.5",
-    "mocha": "2.2.5",
-    "pre-commit": "1.0.10"
-  }
+    "assume": "1.2.x",
+    "istanbul": "0.3.x",
+    "mocha": "2.2.x",
+    "pre-commit": "1.0.x"
+  },
+  "pre-commit": ["coverage", "100%"]
 }
