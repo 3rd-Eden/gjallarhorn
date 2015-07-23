@@ -17,6 +17,9 @@ describe('gjallarhorn', function () {
 
   fixtures.idonotexistlolcakes = 1;
 
+  /* istanbul ignore next */
+  function nope() {}
+
   beforeEach(function () {
     ghorn = new Gjallarhorn();
 
@@ -46,25 +49,28 @@ describe('gjallarhorn', function () {
 
   describe('#reload', function () {
     it('sets a new child process generating factory', function () {
-      function factory() {
-      }
-
-      assume(ghorn.factory).does.not.equal(factory);
-      assume(ghorn.reload(factory)).equals(ghorn);
-      assume(ghorn.factory).equals(factory);
+      assume(ghorn.factory).does.not.equal(nope);
+      assume(ghorn.reload(nope)).equals(ghorn);
+      assume(ghorn.factory).equals(nope);
     });
   });
 
   describe('#launch', function () {
+    it('ignores the launch if false is returned from the factory', function () {
+      assume(ghorn.active).has.length(0);
+      assume(ghorn.queue).has.length(0);
+
+      assume(ghorn.launch('wtf moo cows', nope)).is.false();
+
+      assume(ghorn.active).has.length(0);
+      assume(ghorn.queue).has.length(0);
+    });
+
     it('returns a boolean as indication if a process is queued', function () {
       ghorn.active = new Array(ghorn.concurrent);
 
-      ghorn.reload(function () {
-        return {};
-      });
-
       assume(ghorn.queue).to.have.length(0);
-      assume(ghorn.launch({spec: 'here'}, function () {})).equals(false);
+      assume(ghorn.launch({spec: 'here'}, nope)).equals(false);
       assume(ghorn.queue).to.have.length(1);
     });
 
@@ -77,12 +83,12 @@ describe('gjallarhorn', function () {
         return false;
       });
 
-      assume(ghorn.launch(1, function () {})).equals(false);
+      assume(ghorn.launch(1, nope)).equals(false);
       next();
     });
 
     it('adds a timeout', function () {
-      ghorn.launch('messages', function () {});
+      ghorn.launch('messages', nope);
       assume(ghorn.timers.active((ghorn.ids - 1) +':timeout')).is.true();
     });
 
@@ -105,6 +111,18 @@ describe('gjallarhorn', function () {
         assume(err.message).includes('timed out');
         assume(err.message).includes('200 ms');
 
+        next();
+      });
+    });
+
+    it('it retries if the process exits with 1', function (next) {
+      ghorn.launch('one', function (err, messages) {
+        assume(err.message).includes('failed');
+        assume(err.message).includes('retrying');
+        assume(messages).to.have.length(1);
+        assume(messages[0]).to.equals('space face');
+
+        console.log('ohai');
         next();
       });
     });
@@ -155,7 +173,7 @@ describe('gjallarhorn', function () {
 
     it('returns false if active is full', function () {
       ghorn.active = new Array(ghorn.concurrent);
-      ghorn.queue.push([0, function () {}]);
+      ghorn.queue.push([0, nope]);
 
       assume(ghorn.next()).is.false();
     });
@@ -203,11 +221,12 @@ describe('gjallarhorn', function () {
         next();
       });
 
-      assume(ghorn.again({
-        fn: function () {},
-        retries: 1,
-        spec: 'lol'
-      })).equals(true);
+      assume(ghorn.again({ fn: nope, retries: 1, spec: 'lol' })).equals(true);
+    });
+
+    it('can be called after the instance is destroyed', function () {
+      ghorn.destroy();
+      assume(ghorn.again({ fn: nope, retries: 0, spec: 'lol' })).equals(true);
     });
   });
 

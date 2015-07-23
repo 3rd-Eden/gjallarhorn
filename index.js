@@ -114,14 +114,13 @@ Gjallarhorn.prototype.next = function next() {
  * @api private
  */
 Gjallarhorn.prototype.again = function again(round) {
-  if (!round.retries) return false;
-
   //
   // This prevents a lot of duplicate checks for when the instance is destroyed,
   // we really don't want to continue the execution chain. This could be caused
   // by an edge case where destroy is called before a worker is ending.
   //
   if (!this.timers) return true;
+  if (!round.retries) return false;
 
   //
   // Create a back up of the callback as we don't really want it to be called in
@@ -159,10 +158,13 @@ Gjallarhorn.prototype.tracking = function tracking(round) {
   function retry(err) {
     if (err) {
       if (self.again(round)) return;
-      if ('number' === typeof err) err = new Error('Operation failed after retrying');
+
+      if ('number' === typeof err) {
+        err = new Error('Operation failed after retrying');
+      }
     }
 
-    self.clear(id, err, messages || []);
+    self.clear(id, err, messages);
     self.next();
   }
 
