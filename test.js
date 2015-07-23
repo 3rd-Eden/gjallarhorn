@@ -15,6 +15,8 @@ describe('gjallarhorn', function () {
     return memo;
   }, {});
 
+  fixtures.idonotexistlolcakes = 1;
+
   beforeEach(function () {
     ghorn = new Gjallarhorn();
 
@@ -107,8 +109,28 @@ describe('gjallarhorn', function () {
       });
     });
 
-    it('receives an error if re-tries to many times', function (next) {
+    it('it retries if the process dies instantly', function (next) {
       ghorn.launch('death', function (err) {
+        assume(err.message).includes('failed');
+        assume(err.message).includes('retrying');
+
+        next();
+      });
+    });
+
+    it('it retries if the process dies, slowly', function (next) {
+      this.timeout(ghorn.retries * 1200);
+
+      ghorn.launch('slow-death', function (err) {
+        assume(err.message).includes('failed');
+        assume(err.message).includes('retrying');
+
+        next();
+      });
+    });
+
+    it('works against non-existing files', function (next) {
+      ghorn.launch('idonotexistlolcakes', function (err) {
         assume(err.message).includes('failed');
         assume(err.message).includes('retrying');
 
@@ -175,8 +197,22 @@ describe('gjallarhorn', function () {
   });
 
   describe('#again', function () {
-    it('cannot try again if there are no more retries');
-    it('clears and re-launches if it can try again');
+    it('cannot try again if there are no more retries', function () {
+      assume(ghorn.again({ retries: 0 })).equals(false);
+    });
+
+    it('clears and re-launches if it can try again', function (next) {
+      ghorn.reload(function (spec) {
+        assume(spec).equals('lol');
+        next();
+      });
+
+      assume(ghorn.again({
+        fn: function () {},
+        retries: 1,
+        spec: 'lol'
+      })).equals(true);
+    });
   });
 
   describe('#destroy', function () {

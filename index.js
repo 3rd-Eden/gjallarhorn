@@ -117,6 +117,13 @@ Gjallarhorn.prototype.again = function again(round) {
   if (!round.retries) return false;
 
   //
+  // This prevents a lot of duplicate checks for when the instance is destroyed,
+  // we really don't want to continue the execution chain. This could be caused
+  // by an edge case where destroy is called before a worker is ending.
+  //
+  if (!this.timers) return true;
+
+  //
   // Create a back up of the callback as we don't really want it to be called in
   // our `clear` call as we're not done yet.
   //
