@@ -21,7 +21,9 @@ describe('gjallarhorn', function () {
     ghorn.reload(function factory(name) {
       if (!(name in fixtures)) return false;
 
-      return fork(path.join(__dirname, 'fixtures', name +'.js'));
+      return fork(path.join(__dirname, 'fixtures', name +'.js'), {
+        silent: true
+      });
     });
   });
 
