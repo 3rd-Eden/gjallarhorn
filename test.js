@@ -241,7 +241,7 @@ describe('gjallarhorn', function () {
       ghorn.destroy();
     });
 
-    it('clears all queued processes with an cancel error', function () {
+    it('clears all queued processes with an cancel error', function (next) {
       ghorn.active = new Array(ghorn.concurrent);
 
       ghorn.launch({ payload: 1 }, function (err) {
