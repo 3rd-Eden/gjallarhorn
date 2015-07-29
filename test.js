@@ -37,7 +37,7 @@ describe('gjallarhorn', function () {
   });
 
   it('must accept an options object', function () {
-    var g = new Gjallarhorn({ retries: 10,  });
+    var g = new Gjallarhorn({ retries: 10 });
 
     assume(g.retries).equals(10);
     assume(g.concurrent).equals(256);
@@ -122,7 +122,6 @@ describe('gjallarhorn', function () {
         assume(messages).to.have.length(1);
         assume(messages[0]).to.equals('space face');
 
-        console.log('ohai');
         next();
       });
     });
@@ -227,6 +226,20 @@ describe('gjallarhorn', function () {
     it('can be called after the instance is destroyed', function () {
       ghorn.destroy();
       assume(ghorn.again({ fn: nope, retries: 0, spec: 'lol' })).equals(true);
+    });
+  });
+
+  describe('#has', function () {
+    it('finds an active child process', function (next) {
+      ghorn.launch('death', function (err) {
+        assume(ghorn.active).to.have.length(2);
+        assume(ghorn.has('nope')).to.equal(false);
+        assume(ghorn.has('1')).to.equal(false);
+        assume(ghorn.has(1)).to.equal(true);
+        assume(ghorn.has(2)).to.equal(true);
+
+        next();
+      });
     });
   });
 

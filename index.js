@@ -212,6 +212,19 @@ Gjallarhorn.prototype.clear = function clear(id, err, messages) {
 };
 
 /**
+ * Find an active child process.
+ *
+ * @param {Number} id Child process id.
+ * @returns {Boolean}
+ * @api public
+ */
+Gjallarhorn.prototype.has = function has(id) {
+  return this.active.some(function hasId(child) {
+    return child.id === id;
+  });
+};
+
+/**
  * Completely destroy the Gjallarhorn instance.
  *
  * @returns {Boolean}
