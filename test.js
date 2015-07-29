@@ -37,7 +37,7 @@ describe('gjallarhorn', function () {
   });
 
   it('must accept an options object', function () {
-    var g = new Gjallarhorn({ retries: 10,  });
+    var g = new Gjallarhorn({ retries: 10 });
 
     assume(g.retries).equals(10);
     assume(g.concurrent).equals(256);
