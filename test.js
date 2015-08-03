@@ -209,6 +209,55 @@ describe('gjallarhorn', function () {
     });
   });
 
+  describe('#clear', function () {
+    it('only removes active items for the given id', function () {
+      ghorn.launch('timeout', function () {});
+      ghorn.launch('timeout', function () {});
+      ghorn.launch('timeout', function () {});
+
+      assume(ghorn.active).has.length(3);
+
+      assume(ghorn.active[0].id).equals(0);
+      assume(ghorn.active[1].id).equals(1);
+      assume(ghorn.active[2].id).equals(2);
+
+      assume(ghorn.clear(0)).equals(ghorn);
+
+      assume(ghorn.active).has.length(2);
+      assume(ghorn.active[0].id).equals(1);
+      assume(ghorn.active[1].id).equals(2);
+    });
+
+    it('calls the callback for the given id with an error', function (next) {
+      /* istanbul ignore next */
+      ghorn.launch('timeout', function () {});
+
+      ghorn.launch('timeout', function (err) {
+        assume(err).is.a('error');
+        assume(err.message).equals('custom message');
+
+        next();
+      });
+
+      /* istanbul ignore next */
+      ghorn.launch('timeout', function () {});
+
+      ghorn.clear(1, new Error('custom message'));
+    });
+
+    it('calls the callback for the given id with supplied messages', function (next) {
+      ghorn.launch('timeout', function (err, messages) {
+        assume(err).is.a('undefined');
+        assume(messages).is.a('array');
+        assume(messages[0]).equals('hello');
+
+        next();
+      });
+
+      ghorn.clear(0, undefined, ['hello']);
+    });
+  });
+
   describe('#again', function () {
     it('cannot try again if there are no more retries', function () {
       assume(ghorn.again({ retries: 0 })).equals(false);
