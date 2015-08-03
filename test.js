@@ -230,16 +230,16 @@ describe('gjallarhorn', function () {
   });
 
   describe('#has', function () {
-    it('finds an active child process', function (next) {
-      ghorn.launch('death', function (err) {
-        assume(ghorn.active).to.have.length(2);
-        assume(ghorn.has('nope')).to.equal(false);
-        assume(ghorn.has('1')).to.equal(false);
-        assume(ghorn.has(1)).to.equal(true);
-        assume(ghorn.has(2)).to.equal(true);
+    it('finds an active child process', function () {
+      ghorn.launch('one', function (err) {
 
-        next();
       });
+
+      assume(ghorn.active).to.have.length(1);
+      assume(ghorn.has('nope')).to.equal(false);
+      assume(ghorn.has('1')).to.equal(false);
+      assume(ghorn.has(0)).to.equal(true);
+      assume(ghorn.has(1)).to.equal(false);
     });
   });
 
