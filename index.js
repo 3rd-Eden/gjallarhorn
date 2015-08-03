@@ -195,7 +195,7 @@ Gjallarhorn.prototype.tracking = function tracking(round) {
  */
 Gjallarhorn.prototype.clear = function clear(id, err, messages) {
   this.active = this.active.filter(function filter(round) {
-    if (id !== round.id) return false;
+    if (id !== round.id) return true;
 
     round.fn(err, messages);
 
@@ -204,7 +204,7 @@ Gjallarhorn.prototype.clear = function clear(id, err, messages) {
     try { round.ref.kill(); }
     catch (e) {}
 
-    return true;
+    return false;
   });
 
   this.timers.clear(id +':timeout');
