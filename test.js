@@ -163,6 +163,25 @@ describe('gjallarhorn', function () {
         next();
       });
     });
+
+    it('handles child process error events correctly', function (next) {
+      ghorn.launch('timeout', function (err) {
+        assume(err.message).equals('custom error message');
+
+        next();
+      });
+
+      var child;
+
+      child= ghorn.active[0].ref;
+      child.emit('error', new Error('custom error message'));
+
+      child = ghorn.active[0].ref;
+      child.emit('error', new Error('custom error message'));
+
+      child = ghorn.active[0].ref;
+      child.emit('error', new Error('custom error message'));
+    });
   });
 
   describe('#next', function () {
