@@ -104,6 +104,32 @@ describe('gjallarhorn', function () {
       });
     });
 
+    it('uses a `message` function as alternate to recieve messages', function (next) {
+      next = assume.plan(4, next);
+
+      ghorn.launch('messages', {
+        message: function received(msg) {
+          assume(msg.message).is.between(1, 2);
+        }
+      }, function (err, data) {
+        assume(data).is.a('array');
+        assume(data).has.length(0);
+
+        next();
+      });
+    });
+
+    it('can set a custom timeout per launch', function (next) {
+      ghorn.launch('timeout', {
+        timeout: 200
+      }, function (err) {
+        assume(err.message).includes('timed out');
+        assume(err.message).includes('200 ms');
+
+        next();
+      });
+    });
+
     it('receives an error if the operation times out', function (next) {
       ghorn.timeout = 200;
 

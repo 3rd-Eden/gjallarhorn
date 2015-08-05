@@ -11,12 +11,17 @@ var TickTock = require('tick-tock')
  * @param {String} id Unique id
  * @param {Object} spec Specification used to spawn childs.
  * @param {ChildProcess} ref Reference to the spawned child process.
+ * @param {Number} retries Amount of retries available.
+ * @param {Number} timeout Process timeout.
+ * @param {Function} message Message handler.
  * @param {Function} fn Completion callback.
  * @api private
  */
-function Round(id, spec, ref, retries, fn) {
+function Round(id, spec, ref, retries, timeout, fn, message) {
   this.events = new Ultron(ref);
   this.retries = retries - 1;
+  this.timeout = timeout;
+  this.message = message;
   this.spec = spec;
   this.ref = ref;
   this.id = id;
@@ -80,6 +85,7 @@ Gjallarhorn.prototype.launch = function launch(spec, options, fn) {
   }
 
   options.retries = 'retries' in options ? options.retries : this.retries;
+  options.timeout = 'timeout' in options ? options.timeout : this.timeout;
 
   if (this.active.length === this.concurrent) {
     this.queue.push([ spec, options, fn ]);
@@ -89,7 +95,15 @@ Gjallarhorn.prototype.launch = function launch(spec, options, fn) {
   var ref;
 
   if (!this.factory || !(ref = this.factory(spec))) return false;
-  this.tracking(new Round(this.ids++, spec, ref, options.retries, one(fn)));
+  this.tracking(new Round(
+    this.ids++,           // id.
+    spec,                 // launch specification.
+    ref,                  // child process ref.
+    options.retries,      // retries available.
+    options.timeout,      // process timeout.
+    one(fn),              // completion callback.
+    options.message       // message handler.
+  ));
 
   return true;
 };
@@ -171,14 +185,14 @@ Gjallarhorn.prototype.tracking = function tracking(round) {
   self.timers.setTimeout(id +':timeout', function timeout() {
     if (self.again(round)) return;
 
-    self.clear(id, new Error('Operation timed out after '+ self.timeout +' ms'), messages);
+    self.clear(id, new Error('Operation timed out after '+ round.timeout +' ms'), messages);
     self.next();
-  }, self.timeout);
+  }, round.timeout);
 
   round.events
   .once('exit', retry)
   .once('error', retry)
-  .on('message', function message(data) {
+  .on('message', round.message || function message(data) {
     messages.push(data);
   });
 
