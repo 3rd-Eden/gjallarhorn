@@ -101,7 +101,10 @@ Launch a new process. This method accepts 3 arguments:
 - `options` Optional object which allows you to individually configure certain
   options:
   - `retries` Set the amount of retries per spawned process. This allows you to
-  bump, or just completely disable them.
+    bump, or just completely disable them.
+  - `timeout` A custom timeout instead of defaulting to the global timeout.
+  - `message` A custom function to handle the messages that we receive from the
+    child processes. The function will receive the messages as first argument.
 - `fn` A completion callback which will be called using the error first callback
   pattern. The second argument that this function receives is an array of
   `messages` that we're received from the child process.
