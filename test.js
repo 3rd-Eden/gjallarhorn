@@ -105,11 +105,12 @@ describe('gjallarhorn', function () {
     });
 
     it('uses a `message` function as alternate to recieve messages', function (next) {
-      next = assume.plan(4, next);
+      next = assume.plan(6, next);
 
       ghorn.launch('messages', {
-        message: function received(msg) {
+        message: function received(msg, round) {
           assume(msg.message).is.between(1, 2);
+          assume(round).is.an('object');
         }
       }, function (err, data) {
         assume(data).is.a('array');

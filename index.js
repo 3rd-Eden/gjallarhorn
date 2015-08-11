@@ -158,7 +158,8 @@ Gjallarhorn.prototype.again = function again(round) {
 Gjallarhorn.prototype.tracking = function tracking(round) {
   var self = this
     , id = round.id
-    , messages = [];
+    , messages = []
+    , onMessage = round.message;
 
   /**
    * According to the documentation it's possible that `exit` is not called in
@@ -189,12 +190,16 @@ Gjallarhorn.prototype.tracking = function tracking(round) {
     self.next();
   }, round.timeout);
 
-  round.events
-  .once('exit', retry)
-  .once('error', retry)
-  .on('message', round.message || function message(data) {
+  onMessage = onMessage || function message(data) {
     messages.push(data);
-  });
+  };
+
+  round.events
+    .once('exit', retry)
+    .once('error', retry)
+    .on('message', function (data) {
+      onMessage(data, round);
+    });
 
   this.active.push(round);
 };
