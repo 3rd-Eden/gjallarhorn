@@ -3,6 +3,8 @@
 var TickTock = require('tick-tock')
   , ms = require('millisecond')
   , Ultron = require('ultron')
+  , killer = require('killer')
+  , after = require('after')
   , one = require('one-time');
 
 /**
@@ -210,9 +212,12 @@ Gjallarhorn.prototype.tracking = function tracking(round) {
  * @param {String} id Id of the child that needs to be cleaned up.
  * @param {Error} err Optional error argument if the we failed.
  * @param {Array} messages All the received messages from this process.
+ * @param {Function} fn Optional function to call when process has been killed
  * @api private
  */
-Gjallarhorn.prototype.clear = function clear(id, err, messages) {
+Gjallarhorn.prototype.clear = function clear(id, err, messages, fn) {
+  var toKill = [];
+  fn = fn || function nope() {};
   this.active = this.active.filter(function filter(round) {
     if (id !== round.id) return true;
 
@@ -220,11 +225,17 @@ Gjallarhorn.prototype.clear = function clear(id, err, messages) {
 
     round.events.remove();
 
-    try { round.ref.kill(); }
-    catch (e) {}
+    toKill.push(round.ref.pid);
 
     return false;
   });
+
+  var done = after(toKill.length, fn);
+
+  toKill.filter(Boolean).forEach(function (pid) {
+    killer(pid, done);
+  });
+
 
   this.timers.clear(id +':timeout');
   return this;
