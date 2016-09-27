@@ -13,16 +13,21 @@
   "author": "Arnout Kazemier",
   "license": "MIT",
   "dependencies": {
+    "after": "~0.8.2",
+    "killer": "~0.1.0",
     "millisecond": "0.1.x",
     "one-time": "0.0.x",
     "tick-tock": "1.0.x",
     "ultron": "1.0.x"
   },
   "devDependencies": {
-    "assume": "1.2.x",
+    "assume": "1.4.x",
     "istanbul": "0.3.x",
     "mocha": "2.2.x",
     "pre-commit": "1.0.x"
   },
-  "pre-commit": ["coverage", "100%"]
+  "pre-commit": [
+    "coverage",
+    "100%"
+  ]
 }

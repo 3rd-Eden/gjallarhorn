@@ -230,7 +230,7 @@ describe('gjallarhorn', function () {
 
       ghorn.reload(function () {
         var ee = new EventEmitter();
-
+        ee.pid = 928390;
         setTimeout(function () { ee.emit('exit', 0); }, 10);
 
         return ee;
