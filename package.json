@@ -18,13 +18,13 @@
     "millisecond": "0.1.x",
     "one-time": "0.0.x",
     "tick-tock": "1.0.x",
-    "ultron": "1.0.x"
+    "ultron": "1.1.x"
   },
   "devDependencies": {
-    "assume": "1.4.x",
+    "assume": "2.0.x",
     "istanbul": "0.3.x",
-    "mocha": "2.2.x",
-    "pre-commit": "1.0.x"
+    "mocha": "5.0.x",
+    "pre-commit": "1.2.x"
   },
   "pre-commit": [
     "coverage",
