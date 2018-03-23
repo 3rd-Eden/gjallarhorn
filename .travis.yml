@@ -1,11 +1,7 @@
 language: node_js
 node_js:
-  - "0.12"
-  - "0.10"
-  - "0.8"
-  - "iojs"
-before_install:
-  - "npm install -g npm@1.4.x"
+  - "8"
+  - "9"
 script:
   - "npm run test-travis"
 after_script:
