@@ -1,11 +1,12 @@
 'use strict';
 
-var TickTock = require('tick-tock')
+var debug = require('diagnostics')('gjallarhorn')
+  , TickTock = require('tick-tock')
   , ms = require('millisecond')
   , Ultron = require('ultron')
   , killer = require('killer')
-  , after = require('after')
-  , one = require('one-time');
+  , one = require('one-time')
+  , after = require('after');
 
 /**
  * Representation of a spawned or to-spawn process.
@@ -67,6 +68,7 @@ function Gjallarhorn(options) {
  * @api public
  */
 Gjallarhorn.prototype.reload = function reload(factory) {
+  debug('updating factory function');
   this.factory = factory;
   return this;
 };
@@ -90,6 +92,7 @@ Gjallarhorn.prototype.launch = function launch(spec, options, fn) {
   options.timeout = 'timeout' in options ? options.timeout : this.timeout;
 
   if (this.active.length === this.concurrent) {
+    debug('attempted to launch a new process but we are at max concurrencty', spec, options);
     this.queue.push([ spec, options, fn ]);
     return false;
   }
@@ -97,6 +100,9 @@ Gjallarhorn.prototype.launch = function launch(spec, options, fn) {
   var ref;
 
   if (!this.factory || !(ref = this.factory(spec))) return false;
+
+  debug('starting to track a new process');
+
   this.tracking(new Round(
     this.ids++,           // id.
     spec,                 // launch specification.
@@ -117,8 +123,12 @@ Gjallarhorn.prototype.launch = function launch(spec, options, fn) {
  * @api private
  */
 Gjallarhorn.prototype.next = function next() {
-  if (!this.queue.length || this.active.length === this.concurrent) return false;
+  if (!this.queue.length || this.active.length === this.concurrent) {
+    debug('not starting another process, either max concurrency or nothing queued');
+    return false;
+  }
 
+  debug('launching a new process from the queue');
   return this.launch.apply(this, this.queue.shift());
 };
 
@@ -137,6 +147,8 @@ Gjallarhorn.prototype.again = function again(round) {
   //
   if (!this.timers) return true;
   if (!round.retries) return false;
+
+  debug('allowed to restart the process', round);
 
   //
   // Create a back up of the callback as we don't really want it to be called in
@@ -174,6 +186,7 @@ Gjallarhorn.prototype.tracking = function tracking(round) {
    */
   function retry(err) {
     if (err) {
+      debug('retying round because of error', err);
       if (self.again(round)) return;
 
       if ('number' === typeof err) {
@@ -186,13 +199,17 @@ Gjallarhorn.prototype.tracking = function tracking(round) {
   }
 
   self.timers.setTimeout(id +':timeout', function timeout() {
+    debug('process timed out, attempting to retry');
+
     if (self.again(round)) return;
 
+    debug('not allowed to restart timed out process, failing with error');
     self.clear(id, new Error('Operation timed out after '+ round.timeout +' ms'), messages);
     self.next();
   }, round.timeout);
 
   onMessage = onMessage || function message(data) {
+    debug('received new message', data);
     messages.push(data);
   };
 
@@ -218,9 +235,11 @@ Gjallarhorn.prototype.tracking = function tracking(round) {
 Gjallarhorn.prototype.clear = function clear(id, err, messages, fn) {
   var toKill = [];
   fn = fn || function nope() {};
+
   this.active = this.active.filter(function filter(round) {
     if (id !== round.id) return true;
 
+    debug('clearing round %s', id, err);
     round.fn(err, messages);
 
     round.events.remove();
@@ -233,9 +252,9 @@ Gjallarhorn.prototype.clear = function clear(id, err, messages, fn) {
   var done = after(toKill.length, fn);
 
   toKill.filter(Boolean).forEach(function (pid) {
+    debug('activating process killed on pid %s', pid);
     killer(pid, done);
   });
-
 
   this.timers.clear(id +':timeout');
   return this;
@@ -286,6 +305,8 @@ Gjallarhorn.prototype.destroy = function destroy() {
   this.queue.length = this.active.length = 0;
   this.timers.destroy();
   this.factory = this.timers = null;
+
+  debug('destroying instance');
 
   return true;
 };
